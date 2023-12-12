@@ -25,7 +25,6 @@
 #include "transformer_ctx.h"
 #include "uint4x2.h"
 #include "xdnn.h"
-#include "verbose.h"
 
 #include <cstring>
 #include <map>
@@ -477,7 +476,7 @@ public:
 #endif
         }
     }
-    
+
     template <typename InT, typename WeiT, typename OutT>
     static void compute(bool transA, int M, int N, int K, float alpha, const InT *A, int lda, const WeiT *packedB,
             const float *scaleB, const float *zeroB, float beta, OutT *C, int ldc) {
@@ -490,8 +489,9 @@ public:
         // FP16
         else if constexpr (std::is_same_v<WeiT, float16_t>) {
 #ifdef AVX512_FP32_WEIGHT_ONLY_FP16
-            TimeLine t("xdnn_sgemm_f32f16f32_compute");
-            xdnn_sgemm_f32f16f32_compute(transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc);
+            Verbose_GE1("xdnn_sgemm_f32f16f32_compute",  xdnn_sgemm_f32f16f32_compute(transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc));
+            // TimeLine t("xdnn_sgemm_f32f16f32_compute");
+            // xdnn_sgemm_f32f16f32_compute(transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc);
 #elif defined(AVX512_FP16_WEIGHT_ONLY_FP16)
             TimeLine t("xdnn_hgemm_f32f16f32_compute");
             xdnn_hgemm_f32f16f32_compute(transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc);
@@ -579,9 +579,9 @@ public:
         // FP16
         else if constexpr (std::is_same_v<WeiT, float16_t>) {
 #ifdef AVX512_FP32_WEIGHT_ONLY_FP16
-            Verbose_GE1("xdnn_sgemm_f32f16f32_compute_biasadd",
-                        xdnn_sgemm_f32f16f32_compute_biasadd(
-                            transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc, bias));
+            TimeLine t("xdnn_sgemm_f32f16f32_compute_biasadd");
+            xdnn_sgemm_f32f16f32_compute_biasadd(
+                    transA, M, N, K, alpha, A, lda, (const XDNN_FP16 *)packedB, beta, C, ldc, bias);
 #elif defined(AVX512_FP16_WEIGHT_ONLY_FP16)
             TimeLine t("xdnn_hgemm_f32f16f32_compute_biasadd");
             xdnn_hgemm_f32f16f32_compute_biasadd(
